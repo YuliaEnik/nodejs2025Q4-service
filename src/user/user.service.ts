@@ -21,6 +21,10 @@ export const UserService = {
     return userWithoutPassword;
   },
 
+  findByIdWithPassword(id: string): User | null {
+    return users.find((user) => user.id === id) || null;
+  },
+
   create(createUserDto: CreateUserDto): UserResponse {
     const now = Date.now();
     const newUser: User = {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, HttpException, HttpStatus, HttpCode } from '@nestjs/common';
 import { ArtistService } from './artist.service';
 import { CreateArtistDto, UpdateArtistDto } from './artist.types';
 import { validate as isUUID } from 'uuid';
@@ -25,6 +25,7 @@ export class ArtistController {
   }
 
   @Post()
+  @HttpCode(201)  
   create(@Body() createArtistDto: CreateArtistDto) {
     if (!createArtistDto.name || typeof createArtistDto.grammy !== 'boolean') {
       throw new HttpException('Name and grammy are required', HttpStatus.BAD_REQUEST);
@@ -53,6 +54,7 @@ export class ArtistController {
   }
 
   @Delete(':id')
+  @HttpCode(204) 
   remove(@Param('id') id: string) {
     if (!isUUID(id)) {
       throw new HttpException('Invalid artist ID', HttpStatus.BAD_REQUEST);

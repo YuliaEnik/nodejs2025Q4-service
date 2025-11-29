@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, HttpException, HttpStatus, HttpCode } from '@nestjs/common';
 import { TrackService } from './track.service';
 import { CreateTrackDto, UpdateTrackDto } from './track.types';
 import { validate as isUUID } from 'uuid';
@@ -24,6 +24,7 @@ export class TrackController {
   }
 
   @Post() 
+  @HttpCode(201)  
   create(@Body() createTrackDto: CreateTrackDto) {
     if (!createTrackDto.name || !createTrackDto.duration) {
       throw new HttpException('Name and duration are required', HttpStatus.BAD_REQUEST);
@@ -58,6 +59,7 @@ export class TrackController {
   }
 
   @Delete(':id')  
+  @HttpCode(204)
   remove(@Param('id') id: string) {
     if (!isUUID(id)) {
       throw new HttpException('Invalid track ID', HttpStatus.BAD_REQUEST);

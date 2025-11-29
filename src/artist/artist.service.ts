@@ -1,5 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Artist, CreateArtistDto, UpdateArtistDto } from './artist.types';
+import { TrackService } from 'src/track/track.service';
+import { AlbumService } from 'src/album/album.service';
 
 const artists: Artist[] = [];
 
@@ -38,6 +40,9 @@ export const ArtistService = {
   delete(id: string): boolean {
     const artistIndex = artists.findIndex((artist) => artist.id === id);
     if (artistIndex === -1) return false;
+
+    TrackService.setArtistIdToNull(id);
+    AlbumService.setArtistIdToNull(id);
 
     artists.splice(artistIndex, 1);
     return true;

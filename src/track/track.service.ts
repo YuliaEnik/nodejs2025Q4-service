@@ -39,4 +39,20 @@ export const TrackService = {
     tracks.splice(trackIndex, 1); 
     return true; 
   },
+
+  setArtistIdToNull(artistId: string): void {
+    tracks.forEach(track => {
+      if (track.artistId === artistId) {
+        track.artistId = null;
+      }
+    });
+  },
+
+  setAlbumIdToNull(albumId: string): void {
+    tracks.forEach(track => {
+      if (track.albumId === albumId) {
+        track.albumId = null;
+      }
+    });
+  },
 };

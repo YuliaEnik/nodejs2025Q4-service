@@ -48,33 +48,33 @@ export class UserController {
   }
 
   @Put(':id')
-  updatePassword(
-    @Param('id') id: string,
-    @Body() updatePasswordDto: UpdatePasswordDto,
-  ) {
+  updatePassword(@Param('id') id: string, 
+    @Body() updatePasswordDto: UpdatePasswordDto) {
     if (!isUUID(id)) {
       throw new HttpException('Invalid user ID', HttpStatus.BAD_REQUEST);
     }
 
     if (!updatePasswordDto.oldPassword || !updatePasswordDto.newPassword) {
-      throw new HttpException(
-        'Old password and new password are required',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException('Old password and new password are required', HttpStatus.BAD_REQUEST);
+    }
+
+    const userExists = UserService.findByIdWithPassword(id);
+    if (!userExists) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
     const updatedUser = UserService.updatePassword(id, updatePasswordDto);
-
-    if (!updatedUser) {
-      throw new HttpException(
-        'User not found or old password is incorrect',
-        HttpStatus.NOT_FOUND,
-      );
+  
+    if (updatedUser === null) {
+    const userExists = UserService.findById(id);
+      if (!userExists) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      } else {
+        throw new HttpException('Old password is incorrect', HttpStatus.FORBIDDEN); 
+      }
     }
-
     return updatedUser;
-  }
-
+}
   @Delete(':id')
   @HttpCode(204)
   remove(@Param('id') id: string) {
