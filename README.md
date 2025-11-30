@@ -70,3 +70,7 @@ npm run format
 Press <kbd>F5</kbd> to debug.
 
 For more information, visit: https://code.visualstudio.com/docs/editor/debugging
+
+Application is running on: http://localhost:4000;
+OpenAPI documentation: http://localhost:4000/doc;
+OpenAPI spec saved to: doc/api.json;
