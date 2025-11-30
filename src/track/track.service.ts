@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Track, CreateTrackDto, UpdateTrackDto } from './track.types';
+import { FavoritesService } from 'src/favorites/favorites.service';
 
 const tracks: Track[] = [];
 
@@ -36,6 +37,9 @@ export const TrackService = {
   delete(id: string): boolean {
     const trackIndex = tracks.findIndex((track) => track.id === id);
     if (trackIndex === -1) return false;
+
+    FavoritesService.removeTrack(id);
+    
     tracks.splice(trackIndex, 1); 
     return true; 
   },

@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Album, CreateAlbumDto, UpdateAlbumDto } from './album.types';
 import { TrackService } from 'src/track/track.service';
+import { FavoritesService } from '../favorites/favorites.service';
 
 const albums: Album[] = [];
 
@@ -41,6 +42,8 @@ export const AlbumService = {
     if (albumIndex === -1) return false;
 
     TrackService.setAlbumIdToNull(id);
+
+    FavoritesService.removeAlbum(id);
 
     albums.splice(albumIndex, 1);
     return true;

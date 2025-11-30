@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Artist, CreateArtistDto, UpdateArtistDto } from './artist.types';
 import { TrackService } from 'src/track/track.service';
 import { AlbumService } from 'src/album/album.service';
+import { FavoritesService } from '../favorites/favorites.service';
 
 const artists: Artist[] = [];
 
@@ -43,6 +44,7 @@ export const ArtistService = {
 
     TrackService.setArtistIdToNull(id);
     AlbumService.setArtistIdToNull(id);
+    FavoritesService.removeArtist(id);
 
     artists.splice(artistIndex, 1);
     return true;
