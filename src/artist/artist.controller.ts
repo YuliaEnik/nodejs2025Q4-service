@@ -1,68 +1,41 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, HttpException, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, HttpCode, HttpStatus, BadRequestException, NotFoundException } from '@nestjs/common';
 import { ArtistService } from './artist.service';
 import { CreateArtistDto, UpdateArtistDto } from './artist.types';
-import { validate as isUUID } from 'uuid';
 
 @Controller('artist')
 export class ArtistController {
+  constructor(private readonly artistService: ArtistService) {}
+
   @Get()
-  findAll() {
-    return ArtistService.findAll();
+  async findAll() {
+    return this.artistService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid artist ID', HttpStatus.BAD_REQUEST);
-    }
-
-    const artist = ArtistService.findById(id);
-    if (!artist) {
-      throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
-    }
-
-    return artist;
+  async findOne(@Param('id') id: string) {
+    return this.artistService.findById(id);
   }
 
   @Post()
-  @HttpCode(201)  
-  create(@Body() createArtistDto: CreateArtistDto) {
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() createArtistDto: CreateArtistDto) {
     if (!createArtistDto.name || typeof createArtistDto.grammy !== 'boolean') {
-      throw new HttpException('Name and grammy are required', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('Name and grammy are required');
     }
-
-    return ArtistService.create(createArtistDto);
+    return this.artistService.create(createArtistDto);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateArtistDto: UpdateArtistDto) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid artist ID', HttpStatus.BAD_REQUEST);
-    }
-
+  async update(@Param('id') id: string, @Body() updateArtistDto: UpdateArtistDto) {
     if (!updateArtistDto.name || typeof updateArtistDto.grammy !== 'boolean') {
-      throw new HttpException('Name and grammy are required', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('Name and grammy are required');
     }
-
-    const updatedArtist = ArtistService.update(id, updateArtistDto);
-    
-    if (!updatedArtist) {
-      throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
-    }
-
-    return updatedArtist;
+    return this.artistService.update(id, updateArtistDto);
   }
 
   @Delete(':id')
-  @HttpCode(204) 
-  remove(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid artist ID', HttpStatus.BAD_REQUEST);
-    }
-
-    const deleted = ArtistService.delete(id);
-    if (!deleted) {
-      throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
-    }
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string) {
+    await this.artistService.delete(id);
   }
 }

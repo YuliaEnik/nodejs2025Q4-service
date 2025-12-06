@@ -1,3 +1,4 @@
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import {
   User,
@@ -5,73 +6,88 @@ import {
   UpdatePasswordDto,
   UserResponse,
 } from './user.types';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserEntity } from './user.entity';
+import { Repository } from 'typeorm';
 
 const users: User[] = [];
 
-export const UserService = {
-  findAll(): UserResponse[] {
-    return users.map(({ password: _, ...user }) => user);
-  },
+@Injectable()
+export class UserService {
+  constructor(
+    @InjectRepository(UserEntity)
+    private userRepository: Repository<UserEntity>,
+  ) {}
 
-  findById(id: string): UserResponse | null {
-    const user = users.find((user) => user.id === id);
-    if (!user) return null;
+  async findAll(): Promise<Omit<UserEntity, 'password'>[]> {
+    const users = await this.userRepository.find();
+    return users.map(({ password, ...user }) => user);
+  }
 
-    const { password: _, ...userWithoutPassword } = user;
+  async findById(id: string): Promise<Omit<UserEntity, 'password'>> {
+    this.validateUuid(id);
+
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
-  },
+  }
 
-  findByIdWithPassword(id: string): User | null {
-    return users.find((user) => user.id === id) || null;
-  },
+  async findByIdWithPassword(id: string): Promise<UserEntity | null> {
+    return this.userRepository.findOneBy({ id });
+  }
 
-  create(createUserDto: CreateUserDto): UserResponse {
+  async create(createUserDto: CreateUserDto): Promise<Omit<UserEntity, 'password'>> {
     const now = Date.now();
-    const newUser: User = {
-      id: uuidv4(),
+    const newUser = this.userRepository.create({
       ...createUserDto,
       version: 1,
       createdAt: now,
       updatedAt: now,
-    };
+    });
 
-    users.push(newUser);
-
-    const { password: _, ...userWithoutPassword } = newUser;
+    const savedUser = await this.userRepository.save(newUser);
+    const { password, ...userWithoutPassword } = savedUser;
     return userWithoutPassword;
-  },
+  }
 
-  updatePassword(
-    id: string,
-    updatePasswordDto: UpdatePasswordDto,
-  ): UserResponse | null {
-    const userIndex = users.findIndex((user) => user.id === id);
-    if (userIndex === -1) return null;
+  async updatePassword(id: string, updatePasswordDto: UpdatePasswordDto): Promise<Omit<UserEntity, 'password'>> {
+    this.validateUuid(id);
 
-    const user = users[userIndex];
-
-    if (user.password !== updatePasswordDto.oldPassword) {
-      return null;
+    const user = await this.findByIdWithPassword(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
 
-    const updatedUser: User = {
-      ...user,
-      password: updatePasswordDto.newPassword,
-      version: user.version + 1,
-      updatedAt: Date.now(),
-    };
+    if (user.password !== updatePasswordDto.oldPassword) {
+      throw new ForbiddenException('Old password is incorrect');
+    }
 
-    users[userIndex] = updatedUser;
+    user.password = updatePasswordDto.newPassword;
+    user.version += 1;
+    user.updatedAt = Date.now();
 
-    const { password: _, ...userWithoutPassword } = updatedUser;
+    const updatedUser = await this.userRepository.save(user); 
+    const { password, ...userWithoutPassword } = updatedUser;
     return userWithoutPassword;
-  },
+  }
 
-  delete(id: string): boolean {
-    const userIndex = users.findIndex((user) => user.id === id);
-    if (userIndex === -1) return false;
+  async remove(id: string): Promise<void> {
+    this.validateUuid(id);
 
-    users.splice(userIndex, 1);
-    return true;
-  },
-};
+    const result = await this.userRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('User not found');
+    }
+  }
+
+  private validateUuid(id: string): void {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      throw new BadRequestException('Invalid UUID');
+    }
+  }
+}

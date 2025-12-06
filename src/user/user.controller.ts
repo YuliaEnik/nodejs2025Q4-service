@@ -7,84 +7,42 @@ import {
   Param,
   Body,
   HttpCode,
-  HttpException,
   HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, UpdatePasswordDto } from './user.types';
-import { validate as isUUID } from 'uuid';
 
 @Controller('user')
 export class UserController {
+  constructor(private readonly userService: UserService) {}
+
   @Get()
-  findAll() {
-    return UserService.findAll();
+  async getAllUsers() {
+    return this.userService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid user ID', HttpStatus.BAD_REQUEST);
-    }
-
-    const user = UserService.findById(id);
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-
-    return user;
+  async getUser(@Param('id') id: string) {
+    return this.userService.findById(id);
   }
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    if (!createUserDto.login || !createUserDto.password) {
-      throw new HttpException(
-        'Login and password are required',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    return UserService.create(createUserDto);
+  @HttpCode(HttpStatus.CREATED)
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto);
   }
 
   @Put(':id')
-  updatePassword(@Param('id') id: string, 
-    @Body() updatePasswordDto: UpdatePasswordDto) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid user ID', HttpStatus.BAD_REQUEST);
-    }
+  async updateUserPassword(
+    @Param('id') id: string,
+    @Body() updatePasswordDto: UpdatePasswordDto,
+  ) {
+    return this.userService.updatePassword(id, updatePasswordDto);
+  }
 
-    if (!updatePasswordDto.oldPassword || !updatePasswordDto.newPassword) {
-      throw new HttpException('Old password and new password are required', HttpStatus.BAD_REQUEST);
-    }
-
-    const userExists = UserService.findByIdWithPassword(id);
-    if (!userExists) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-
-    const updatedUser = UserService.updatePassword(id, updatePasswordDto);
-  
-    if (updatedUser === null) {
-    const userExists = UserService.findById(id);
-      if (!userExists) {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-      } else {
-        throw new HttpException('Old password is incorrect', HttpStatus.FORBIDDEN); 
-      }
-    }
-    return updatedUser;
-}
   @Delete(':id')
-  @HttpCode(204)
-  remove(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid user ID', HttpStatus.BAD_REQUEST);
-    }
-
-    const deleted = UserService.delete(id);
-    if (!deleted) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteUser(@Param('id') id: string) {
+    return this.userService.remove(id);
   }
 }

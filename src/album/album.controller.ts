@@ -1,78 +1,47 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, HttpException, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { CreateAlbumDto, UpdateAlbumDto } from './album.types';
-import { validate as isUUID } from 'uuid';
 
 @Controller('album')
 export class AlbumController {
-  
+  constructor(private readonly albumService: AlbumService) {}
+
   @Get() 
-  findAll() {
-    return AlbumService.findAll();
+  async findAll() {
+    return this.albumService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid album ID', HttpStatus.BAD_REQUEST);
-    }
-
-    const album = AlbumService.findById(id);
-    if (!album) {
-      throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
-    }
-
-    return album;
+  async findOne(@Param('id') id: string) {
+    return this.albumService.findById(id);
   }
 
   @Post()
-  @HttpCode(201)  
-  create(@Body() createAlbumDto: CreateAlbumDto) {
-
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() createAlbumDto: CreateAlbumDto) {
     if (!createAlbumDto.name || !createAlbumDto.year) {
-      throw new HttpException('Name and year are required', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('Name and year are required');
     }
-
     if (typeof createAlbumDto.year !== 'number') {
-      throw new HttpException('Year must be a number', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('Year must be a number');
     }
-
-    return AlbumService.create(createAlbumDto);
+    return this.albumService.create(createAlbumDto);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateAlbumDto: UpdateAlbumDto) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid album ID', HttpStatus.BAD_REQUEST);
-    }
-
+  async update(@Param('id') id: string, @Body() updateAlbumDto: UpdateAlbumDto) {
     if (!updateAlbumDto.name || !updateAlbumDto.year) {
-      throw new HttpException('Name and year are required', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('Name and year are required');
     }
-
     if (typeof updateAlbumDto.year !== 'number') {
-      throw new HttpException('Year must be a number', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('Year must be a number');
     }
-
-    const updatedAlbum = AlbumService.update(id, updateAlbumDto);
-    
-    if (!updatedAlbum) {
-      throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
-    }
-
-    return updatedAlbum;
+    return this.albumService.update(id, updateAlbumDto);
   }
 
   @Delete(':id')
-  @HttpCode(204)
-  remove(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid album ID', HttpStatus.BAD_REQUEST);
-    }
-
-    const deleted = AlbumService.delete(id);
-    if (!deleted) {
-      throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
-    }
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string) {
+    await this.albumService.delete(id);
   }
 }

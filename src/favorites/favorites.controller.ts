@@ -1,96 +1,48 @@
-import { Controller, Get, Post, Delete, Param, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, HttpCode, HttpStatus } from '@nestjs/common';
 import { FavoritesService } from './favorites.service';
-import { validate as isUUID } from 'uuid';
 
 @Controller('favs')
 export class FavoritesController {
-  
+  constructor(private readonly favoritesService: FavoritesService) {}
+
   @Get()
-  findAll() {
-    return FavoritesService.findAll();
+  async findAll() {
+    return this.favoritesService.findAll();
   }
 
   @Post('track/:id')
-  addTrack(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid track ID', HttpStatus.BAD_REQUEST);
-    }
-
-    const added = FavoritesService.addTrack(id);
-    if (!added) {
-      throw new HttpException('Track not found', HttpStatus.UNPROCESSABLE_ENTITY);
-    }
-
-    throw new HttpException('Created', HttpStatus.CREATED);
+  @HttpCode(HttpStatus.CREATED)
+  async addTrack(@Param('id') id: string) {
+    await this.favoritesService.addTrack(id);
   }
 
   @Delete('track/:id')
-  removeTrack(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid track ID', HttpStatus.BAD_REQUEST);
-    }
-
-    const removed = FavoritesService.removeTrack(id);
-    if (!removed) {
-      throw new HttpException('Track not found in favorites', HttpStatus.NOT_FOUND);
-    }
-
-    throw new HttpException('No Content', HttpStatus.NO_CONTENT);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeTrack(@Param('id') id: string) {
+    await this.favoritesService.removeTrack(id);
   }
 
   @Post('album/:id')
-  addAlbum(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid album ID', HttpStatus.BAD_REQUEST);
-    }
-
-    const added = FavoritesService.addAlbum(id);
-    if (!added) {
-      throw new HttpException('Album not found', HttpStatus.UNPROCESSABLE_ENTITY);
-    }
-
-    throw new HttpException('Created', HttpStatus.CREATED);
+  @HttpCode(HttpStatus.CREATED)
+  async addAlbum(@Param('id') id: string) {
+    await this.favoritesService.addAlbum(id);
   }
 
   @Delete('album/:id')
-  removeAlbum(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid album ID', HttpStatus.BAD_REQUEST); 
-    }
-
-    const removed = FavoritesService.removeAlbum(id);
-    if (!removed) {
-      throw new HttpException('Album not found in favorites', HttpStatus.NOT_FOUND);
-    }
-
-    throw new HttpException('No Content', HttpStatus.NO_CONTENT);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeAlbum(@Param('id') id: string) {
+    await this.favoritesService.removeAlbum(id);
   }
 
   @Post('artist/:id')
-  addArtist(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid artist ID', HttpStatus.BAD_REQUEST);
-    }
-
-    const added = FavoritesService.addArtist(id);
-    if (!added) {
-      throw new HttpException('Artist not found', HttpStatus.UNPROCESSABLE_ENTITY);
-    }
-
-    throw new HttpException('Created', HttpStatus.CREATED);
+  @HttpCode(HttpStatus.CREATED)
+  async addArtist(@Param('id') id: string) {
+    await this.favoritesService.addArtist(id);
   }
 
   @Delete('artist/:id')
-  removeArtist(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid artist ID', HttpStatus.BAD_REQUEST);
-    }
-
-    const removed = FavoritesService.removeArtist(id);
-    if (!removed) {
-      throw new HttpException('Artist not found in favorites', HttpStatus.NOT_FOUND);
-    }
-
-    throw new HttpException('No Content', HttpStatus.NO_CONTENT); 
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeArtist(@Param('id') id: string) {
+    await this.favoritesService.removeArtist(id);
   }
 }

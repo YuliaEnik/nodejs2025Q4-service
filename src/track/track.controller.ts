@@ -1,72 +1,47 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, HttpException, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
 import { TrackService } from './track.service';
 import { CreateTrackDto, UpdateTrackDto } from './track.types';
-import { validate as isUUID } from 'uuid';
 
 @Controller('track')
 export class TrackController {
-  
+  constructor(private readonly trackService: TrackService) {}
+
   @Get() 
-  findAll() {
-    return TrackService.findAll();
+  async findAll() {
+    return this.trackService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid track ID', HttpStatus.BAD_REQUEST);
-    }
-    const track = TrackService.findById(id);
-    if (!track) {
-      throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
-    }
-    return track;
+  async findOne(@Param('id') id: string) {
+    return this.trackService.findById(id);
   }
 
   @Post() 
-  @HttpCode(201)  
-  create(@Body() createTrackDto: CreateTrackDto) {
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() createTrackDto: CreateTrackDto) {
     if (!createTrackDto.name || !createTrackDto.duration) {
-      throw new HttpException('Name and duration are required', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('Name and duration are required');
     }
     if (typeof createTrackDto.duration !== 'number') {
-      throw new HttpException('Duration must be a number', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('Duration must be a number');
     }
-    return TrackService.create(createTrackDto);
+    return this.trackService.create(createTrackDto);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateTrackDto: UpdateTrackDto) {
-
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid track ID', HttpStatus.BAD_REQUEST);
-    }
-
+  async update(@Param('id') id: string, @Body() updateTrackDto: UpdateTrackDto) {
     if (!updateTrackDto.name || !updateTrackDto.duration) {
-      throw new HttpException('Name and duration are required', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('Name and duration are required');
     }
-
     if (typeof updateTrackDto.duration !== 'number') {
-      throw new HttpException('Duration must be a number', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('Duration must be a number');
     }
-
-    const updatedTrack = TrackService.update(id, updateTrackDto);
-    
-    if (!updatedTrack) {
-      throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
-    }
-    return updatedTrack;
+    return this.trackService.update(id, updateTrackDto);
   }
 
   @Delete(':id')  
-  @HttpCode(204)
-  remove(@Param('id') id: string) {
-    if (!isUUID(id)) {
-      throw new HttpException('Invalid track ID', HttpStatus.BAD_REQUEST);
-    }
-    const deleted = TrackService.delete(id);
-    if (!deleted) {
-      throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
-    }
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string) {
+    await this.trackService.delete(id);
   }
 }
