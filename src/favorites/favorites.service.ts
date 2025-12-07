@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FavoritesEntity } from './favorites.entity';
@@ -20,8 +25,10 @@ export class FavoritesService {
   ) {}
 
   async findAll(): Promise<FavoritesResponse> {
-    let favorites = await this.favoritesRepository.findOneBy({ id: this.favoritesId });
-    
+    let favorites = await this.favoritesRepository.findOneBy({
+      id: this.favoritesId,
+    });
+
     if (!favorites) {
       favorites = this.favoritesRepository.create({
         id: this.favoritesId,
@@ -31,22 +38,29 @@ export class FavoritesService {
       });
       await this.favoritesRepository.save(favorites);
     }
+
     const favoriteArtists = await Promise.all(
-      favorites.artists.map(id => this.artistService.findById(id).catch(() => null))
+      favorites.artists.map((id) =>
+        this.artistService.findById(id).catch(() => null),
+      ),
     );
 
     const favoriteAlbums = await Promise.all(
-      favorites.albums.map(id => this.albumService.findById(id).catch(() => null))
+      favorites.albums.map((id) =>
+        this.albumService.findById(id).catch(() => null),
+      ),
     );
 
     const favoriteTracks = await Promise.all(
-      favorites.tracks.map(id => this.trackService.findById(id).catch(() => null))
+      favorites.tracks.map((id) =>
+        this.trackService.findById(id).catch(() => null),
+      ),
     );
 
     return {
-      artists: favoriteArtists.filter(artist => artist !== null),
-      albums: favoriteAlbums.filter(album => album !== null),
-      tracks: favoriteTracks.filter(track => track !== null),
+      artists: favoriteArtists.filter((artist) => artist !== null),
+      albums: favoriteAlbums.filter((album) => album !== null),
+      tracks: favoriteTracks.filter((track) => track !== null),
     };
   }
 
@@ -63,7 +77,7 @@ export class FavoritesService {
     }
 
     const favorites = await this.getOrCreateFavorites();
-    
+
     if (!favorites.artists.includes(id)) {
       favorites.artists.push(id);
       await this.favoritesRepository.save(favorites);
@@ -83,7 +97,7 @@ export class FavoritesService {
     }
 
     const favorites = await this.getOrCreateFavorites();
-    
+
     if (!favorites.albums.includes(id)) {
       favorites.albums.push(id);
       await this.favoritesRepository.save(favorites);
@@ -103,7 +117,7 @@ export class FavoritesService {
     }
 
     const favorites = await this.getOrCreateFavorites();
-    
+
     if (!favorites.tracks.includes(id)) {
       favorites.tracks.push(id);
       await this.favoritesRepository.save(favorites);
@@ -115,7 +129,7 @@ export class FavoritesService {
 
     const favorites = await this.getOrCreateFavorites();
     const index = favorites.artists.indexOf(id);
-    
+
     if (index === -1) {
       throw new NotFoundException('Artist is not in favorites');
     }
@@ -129,7 +143,7 @@ export class FavoritesService {
 
     const favorites = await this.getOrCreateFavorites();
     const index = favorites.albums.indexOf(id);
-    
+
     if (index === -1) {
       throw new NotFoundException('Album is not in favorites');
     }
@@ -143,7 +157,7 @@ export class FavoritesService {
 
     const favorites = await this.getOrCreateFavorites();
     const index = favorites.tracks.indexOf(id);
-    
+
     if (index === -1) {
       throw new NotFoundException('Track is not in favorites');
     }
@@ -153,8 +167,10 @@ export class FavoritesService {
   }
 
   private async getOrCreateFavorites(): Promise<FavoritesEntity> {
-    let favorites = await this.favoritesRepository.findOneBy({ id: this.favoritesId });
-    
+    let favorites = await this.favoritesRepository.findOneBy({
+      id: this.favoritesId,
+    });
+
     if (!favorites) {
       favorites = this.favoritesRepository.create({
         id: this.favoritesId,
@@ -164,14 +180,25 @@ export class FavoritesService {
       });
       await this.favoritesRepository.save(favorites);
     }
-    
+
     return favorites;
   }
 
   private validateUuid(id: string): void {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(id)) {
       throw new BadRequestException('Invalid UUID');
+    }
+  }
+
+  async cleanupTrack(id: string): Promise<void> {
+    const favorites = await this.getOrCreateFavorites();
+    const index = favorites.tracks.indexOf(id);
+
+    if (index !== -1) {
+      favorites.tracks.splice(index, 1);
+      await this.favoritesRepository.save(favorites);
     }
   }
 }

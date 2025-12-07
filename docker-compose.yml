@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    build:
-      context: .
-      dockerfile: Dockerfile.postgres
+    image: postgres:16-alpine
     container_name: music-service-postgres
     restart: unless-stopped
     environment:
@@ -14,7 +12,7 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./logs/postgres:/var/log/postgresql
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     networks:
@@ -35,31 +33,25 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      NODE_ENV: ${NODE_ENV:-production}
+      NODE_ENV: ${NODE_ENV:-development}
       PORT: ${PORT:-4000}
-      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
-      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-music_service}
-      DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-music_service}"
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-music_service}
+      DB_SYNCHRONIZE: ${DB_SYNCHRONIZE:-true}
     ports:
       - "${APP_PORT:-4000}:4000"
     volumes:
       - ./logs:/app/logs
-      - ./src:/app/src
+      - ./src:/app/src 
     networks:
       - app-network
-    command: >
-      sh -c "
-        npm run migration:run &&
-        node dist/main
-      "
 
 networks:
   app-network:
     driver: bridge
-    name: music-service-network
 
 volumes:
   postgres_data:

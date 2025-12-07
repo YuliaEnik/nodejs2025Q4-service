@@ -1,11 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ArtistEntity } from './artist.entity';
 import { CreateArtistDto, UpdateArtistDto } from './artist.types';
 import { TrackService } from 'src/track/track.service';
 import { AlbumService } from 'src/album/album.service';
-import { FavoritesService } from '../favorites/favorites.service';
 
 @Injectable()
 export class ArtistService {
@@ -14,7 +17,6 @@ export class ArtistService {
     private artistRepository: Repository<ArtistEntity>,
     private readonly trackService: TrackService,
     private readonly albumService: AlbumService,
-    private readonly favoritesService: FavoritesService,
   ) {}
 
   async findAll(): Promise<ArtistEntity[]> {
@@ -35,30 +37,33 @@ export class ArtistService {
     return this.artistRepository.save(newArtist);
   }
 
-  async update(id: string, updateArtistDto: UpdateArtistDto): Promise<ArtistEntity> {
+  async update(
+    id: string,
+    updateArtistDto: UpdateArtistDto,
+  ): Promise<ArtistEntity> {
     this.validateUuid(id);
-    
-    const artist = await this.findById(id); 
+
+    const artist = await this.findById(id);
     const updatedArtist = this.artistRepository.merge(artist, updateArtistDto);
     return this.artistRepository.save(updatedArtist);
   }
 
   async delete(id: string): Promise<void> {
     this.validateUuid(id);
-    
+
     const artist = await this.artistRepository.findOneBy({ id });
     if (!artist) {
       throw new NotFoundException('Artist not found');
     }
     this.trackService.setArtistIdToNull(id);
     this.albumService.setArtistIdToNull(id);
-    this.favoritesService.removeArtist(id);
 
     await this.artistRepository.remove(artist);
   }
 
   private validateUuid(id: string): void {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(id)) {
       throw new BadRequestException('Invalid UUID');
     }

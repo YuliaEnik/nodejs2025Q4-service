@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  HttpCode,
+  HttpStatus,
+  BadRequestException,
+} from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { CreateAlbumDto, UpdateAlbumDto } from './album.types';
 
@@ -6,7 +17,7 @@ import { CreateAlbumDto, UpdateAlbumDto } from './album.types';
 export class AlbumController {
   constructor(private readonly albumService: AlbumService) {}
 
-  @Get() 
+  @Get()
   async findAll() {
     return this.albumService.findAll();
   }
@@ -29,7 +40,10 @@ export class AlbumController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateAlbumDto: UpdateAlbumDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateAlbumDto: UpdateAlbumDto,
+  ) {
     if (!updateAlbumDto.name || !updateAlbumDto.year) {
       throw new BadRequestException('Name and year are required');
     }

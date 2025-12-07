@@ -7,8 +7,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY tsconfig*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install ALL dependencies (including dev for building)
+RUN npm ci
 
 # Copy source code
 COPY . .
@@ -33,11 +33,6 @@ RUN npm ci --only=production
 
 # Copy built application from builder stage
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nestjs:nodejs /app/package*.json ./
-COPY --from=builder --chown=nestjs:nodejs /app/tsconfig*.json ./
-
-# Copy source files needed for runtime
-COPY --from=builder --chown=nestjs:nodejs /app/src ./src
 
 # Create necessary directories
 RUN mkdir -p /app/logs && \
@@ -51,7 +46,7 @@ EXPOSE 4000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:4000', (r) => {if(r.statusCode !== 200) throw new Error()})"
+  CMD wget --no-verbose --tries=1 --spider http://localhost:4000/health || exit 1
 
 # Start the application
 CMD ["node", "dist/main"]

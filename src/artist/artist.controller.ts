@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, HttpCode, HttpStatus, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  HttpCode,
+  HttpStatus,
+  BadRequestException,
+} from '@nestjs/common';
 import { ArtistService } from './artist.service';
 import { CreateArtistDto, UpdateArtistDto } from './artist.types';
 
@@ -26,7 +37,10 @@ export class ArtistController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateArtistDto: UpdateArtistDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateArtistDto: UpdateArtistDto,
+  ) {
     if (!updateArtistDto.name || typeof updateArtistDto.grammy !== 'boolean') {
       throw new BadRequestException('Name and grammy are required');
     }

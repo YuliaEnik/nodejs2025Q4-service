@@ -3,13 +3,13 @@ import { Album } from '../album/album.types';
 import { Track } from '../track/track.types';
 
 export interface Favorites {
-  artists: string[]; 
-  albums: string[]; 
+  artists: string[];
+  albums: string[];
   tracks: string[];
 }
 
 export interface FavoritesResponse {
   artists: Artist[];
-  albums: Album[]; 
+  albums: Album[];
   tracks: Track[];
 }

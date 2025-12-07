@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  HttpCode,
+  HttpStatus,
+  BadRequestException,
+} from '@nestjs/common';
 import { TrackService } from './track.service';
 import { CreateTrackDto, UpdateTrackDto } from './track.types';
 
@@ -6,7 +17,7 @@ import { CreateTrackDto, UpdateTrackDto } from './track.types';
 export class TrackController {
   constructor(private readonly trackService: TrackService) {}
 
-  @Get() 
+  @Get()
   async findAll() {
     return this.trackService.findAll();
   }
@@ -16,7 +27,7 @@ export class TrackController {
     return this.trackService.findById(id);
   }
 
-  @Post() 
+  @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createTrackDto: CreateTrackDto) {
     if (!createTrackDto.name || !createTrackDto.duration) {
@@ -29,7 +40,10 @@ export class TrackController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateTrackDto: UpdateTrackDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateTrackDto: UpdateTrackDto,
+  ) {
     if (!updateTrackDto.name || !updateTrackDto.duration) {
       throw new BadRequestException('Name and duration are required');
     }
@@ -39,7 +53,7 @@ export class TrackController {
     return this.trackService.update(id, updateTrackDto);
   }
 
-  @Delete(':id')  
+  @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string) {
     await this.trackService.delete(id);

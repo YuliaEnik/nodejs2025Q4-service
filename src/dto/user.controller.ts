@@ -8,11 +8,22 @@ import {
   Body,
   HttpCode,
   HttpStatus,
+  ParseUUIDPipe,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto, UpdatePasswordDto } from './user.types';
+import { UserService } from '../user/user.service';
+import { CreateUserDto } from './create-user.dto';
+import { UpdatePasswordDto } from './update-password.dto';
 
 @Controller('user')
+@UsePipes(
+  new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }),
+)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -22,7 +33,7 @@ export class UserController {
   }
 
   @Get(':id')
-  async getUser(@Param('id') id: string) {
+  async getUser(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.userService.findById(id);
   }
 
@@ -34,7 +45,7 @@ export class UserController {
 
   @Put(':id')
   async updateUserPassword(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
     return this.userService.updatePassword(id, updatePasswordDto);
@@ -42,7 +53,7 @@ export class UserController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteUser(@Param('id') id: string) {
+  async deleteUser(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.userService.remove(id);
   }
 }
