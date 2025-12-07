@@ -9,13 +9,22 @@
 
 ```
 git clone {repository URL}
-```
 
+```
 ## Installing NPM modules
 
 ```
+**Standard installation** (use if `npm install` works without errors):
+
 npm install
+
 ```
+
+**Alternative installation** (use if the standard command fails with a version conflict error):
+
+npm install --legacy-peer-deps
+
+*Note: The `--legacy-peer-deps` flag is used to bypass strict version checking and is suitable for this project. For more details on this flag, see the [npm documentation](https://docs.npmjs.com/cli/v10/commands/npm-install).*
 
 ## Running application
 
@@ -70,3 +79,7 @@ npm run format
 Press <kbd>F5</kbd> to debug.
 
 For more information, visit: https://code.visualstudio.com/docs/editor/debugging
+
+Application is running on: http://localhost:4000;
+OpenAPI documentation: http://localhost:4000/doc;
+OpenAPI spec saved to: doc/api.json;
