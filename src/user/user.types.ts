@@ -17,4 +17,15 @@ export interface UpdatePasswordDto {
   newPassword: string;
 }
 
+export interface JwtPayload {
+  sub: string;
+  login: string;
+  type: string;
+}
+
+export interface AuthUser {
+  id: string;
+  login: string;
+}
+
 export type UserResponse = Omit<User, 'password'>;

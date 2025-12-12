@@ -1,128 +1,68 @@
-import { Injectable, Scope } from '@nestjs/common';
-import * as fs from 'fs';
-import * as path from 'path';
-import { LogLevel } from './log-level.enum';
+import { Injectable, ConsoleLogger } from '@nestjs/common';
 
-@Injectable({ scope: Scope.DEFAULT })
-export class LoggingService {
-  private logLevel: LogLevel;
-  private maxFileSizeKB: number;
-  private errorLogPath: string;
-  private combinedLogPath: string;
+@Injectable()
+export class LoggingService extends ConsoleLogger {
+  private logLevel: number;
 
-  constructor() {
-    this.logLevel = this.getLogLevelFromEnv();
-    this.maxFileSizeKB = parseInt(process.env.LOG_MAX_FILE_SIZE_KB) || 10240;
-    this.errorLogPath = process.env.LOG_ERROR_FILE_PATH || 'logs/errors.log';
-    this.combinedLogPath =
-      process.env.LOG_COMBINED_FILE_PATH || 'logs/combined.log';
-
-    this.ensureLogDirectory();
+  constructor(context?: string) {
+    super(context);
+    this.setLogLevelFromEnv();
   }
 
-  private getLogLevelFromEnv(): LogLevel {
+  private setLogLevelFromEnv(): void {
     const level = process.env.LOG_LEVEL?.toUpperCase();
     switch (level) {
       case 'ERROR':
-        return LogLevel.ERROR;
+        this.logLevel = 0;
+        break;
       case 'WARN':
-        return LogLevel.WARN;
+        this.logLevel = 1;
+        break;
       case 'INFO':
-        return LogLevel.LOG;
+        this.logLevel = 2;
+        break;
       case 'DEBUG':
-        return LogLevel.DEBUG;
+        this.logLevel = 3;
+        break;
       case 'VERBOSE':
-        return LogLevel.VERBOSE;
+        this.logLevel = 4;
+        break;
       default:
-        return LogLevel.LOG;
+        this.logLevel = 2; // default INFO
     }
   }
 
-  private ensureLogDirectory(): void {
-    const errorDir = path.dirname(this.errorLogPath);
-    const combinedDir = path.dirname(this.combinedLogPath);
-
-    [errorDir, combinedDir].forEach((dir) => {
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-    });
-  }
-
-  private shouldLog(level: LogLevel): boolean {
+  private shouldLog(level: number): boolean {
     return level <= this.logLevel;
   }
 
-  private rotateFileIfNeeded(filePath: string): void {
-    if (!fs.existsSync(filePath)) return;
-
-    const stats = fs.statSync(filePath);
-    const fileSizeInKB = stats.size / 1024;
-
-    if (fileSizeInKB >= this.maxFileSizeKB) {
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const rotatedPath = `${filePath}.${timestamp}`;
-      fs.renameSync(filePath, rotatedPath);
+  error(message: any, trace?: string, context?: string): void {
+    if (this.shouldLog(0)) {
+      super.error(message, trace, context);
     }
   }
 
-  private writeLog(filePath: string, message: string): void {
-    this.rotateFileIfNeeded(filePath);
-    fs.appendFileSync(filePath, message + '\n', 'utf8');
+  warn(message: any, context?: string): void {
+    if (this.shouldLog(1)) {
+      super.warn(message, context);
+    }
   }
 
-  private formatMessage(
-    level: string,
-    message: string,
-    context?: string,
-  ): string {
-    const timestamp = new Date().toISOString();
-    const contextStr = context ? ` [${context}]` : '';
-    return `[${timestamp}] ${level}${contextStr}: ${message}`;
+  log(message: any, context?: string): void {
+    if (this.shouldLog(2)) {
+      super.log(message, context);
+    }
   }
 
-  error(message: string, trace?: string, context?: string): void {
-    if (!this.shouldLog(LogLevel.ERROR)) return;
-
-    const formatted = this.formatMessage('ERROR', message, context);
-    console.error(formatted);
-    if (trace) console.error(trace);
-
-    this.writeLog(this.errorLogPath, formatted);
-    if (trace) this.writeLog(this.errorLogPath, `Trace: ${trace}`);
-
-    this.writeLog(this.combinedLogPath, formatted);
+  debug(message: any, context?: string): void {
+    if (this.shouldLog(3)) {
+      super.debug(message, context);
+    }
   }
 
-  warn(message: string, context?: string): void {
-    if (!this.shouldLog(LogLevel.WARN)) return;
-
-    const formatted = this.formatMessage('WARN', message, context);
-    console.warn(formatted);
-    this.writeLog(this.combinedLogPath, formatted);
-  }
-
-  log(message: string, context?: string): void {
-    if (!this.shouldLog(LogLevel.LOG)) return;
-
-    const formatted = this.formatMessage('INFO', message, context);
-    console.log(formatted);
-    this.writeLog(this.combinedLogPath, formatted);
-  }
-
-  debug(message: string, context?: string): void {
-    if (!this.shouldLog(LogLevel.DEBUG)) return;
-
-    const formatted = this.formatMessage('DEBUG', message, context);
-    console.debug(formatted);
-    this.writeLog(this.combinedLogPath, formatted);
-  }
-
-  verbose(message: string, context?: string): void {
-    if (!this.shouldLog(LogLevel.VERBOSE)) return;
-
-    const formatted = this.formatMessage('VERBOSE', message, context);
-    console.log(formatted);
-    this.writeLog(this.combinedLogPath, formatted);
+  verbose(message: any, context?: string): void {
+    if (this.shouldLog(4)) {
+      super.verbose(message, context);
+    }
   }
 }

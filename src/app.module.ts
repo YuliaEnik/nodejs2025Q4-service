@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -8,9 +9,13 @@ import { TrackModule } from './track/track.module';
 import { AlbumModule } from './album/album.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { LoggingModule } from './common/logging/logging.module';
-
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.POSTGRES_HOST || 'postgres',
@@ -19,10 +24,13 @@ import { LoggingModule } from './common/logging/logging.module';
       password: process.env.POSTGRES_PASSWORD || 'postgres',
       database: process.env.POSTGRES_DB || 'music_service',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
-      logging: true,
+      synchronize: false,
+      migrationsRun: true,
+      migrations: [__dirname + '/../migrations/*.ts'],
+      logging: process.env.NODE_ENV !== 'production',
     }),
     LoggingModule,
+    AuthModule,
     UserModule,
     ArtistModule,
     TrackModule,

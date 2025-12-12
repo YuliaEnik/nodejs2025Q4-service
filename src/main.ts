@@ -1,12 +1,20 @@
 import { ValidationPipe } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { LoggingService } from './common/logging/logging.service';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+  });
 
   const loggingService = app.get(LoggingService);
+  const reflector = app.get(Reflector);
+
+  app.useLogger(loggingService);
+
+  app.useGlobalGuards(new JwtAuthGuard(reflector));
 
   process.on('uncaughtException', (error: Error) => {
     loggingService.error(
@@ -14,13 +22,12 @@ async function bootstrap() {
       error.stack,
       'Process',
     );
-
     if (process.env.NODE_ENV === 'production') {
       process.exit(1);
     }
   });
 
-  process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
+  process.on('unhandledRejection', (reason: unknown, promise: Promise<unknown>) => {
     loggingService.error(
       `Unhandled Rejection at: ${promise} - Reason: ${reason}`,
       new Error().stack,
@@ -44,4 +51,5 @@ async function bootstrap() {
     'Bootstrap',
   );
 }
+
 bootstrap();

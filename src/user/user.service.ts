@@ -2,11 +2,13 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto, UpdatePasswordDto, UserResponse } from './user.types';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -33,9 +35,22 @@ export class UserService {
     return this.userRepository.findOneBy({ id });
   }
 
+  async findByLogin(login: string): Promise<UserEntity | null> {
+    return this.userRepository.findOne({ where: { login } });
+  }
+
   async create(createUserDto: CreateUserDto): Promise<UserResponse> {
+    const existingUser = await this.findByLogin(createUserDto.login);
+    if (existingUser) {
+      throw new ConflictException('User with this login already exists');
+    }
+
+    const saltRounds = parseInt(process.env.CRYPT_SALT) || 10;
+    const passwordHash = await bcrypt.hash(createUserDto.password, saltRounds);
+
     const newUser = this.userRepository.create({
-      ...createUserDto,
+      login: createUserDto.login,
+      passwordHash,
       version: 1,
     });
 
@@ -52,11 +67,20 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    if (user.password !== updatePasswordDto.oldPassword) {
+    const isOldPasswordValid = await bcrypt.compare(
+      updatePasswordDto.oldPassword,
+      user.passwordHash,
+    );
+
+    if (!isOldPasswordValid) {
       throw new ForbiddenException('Old password is incorrect');
     }
 
-    user.password = updatePasswordDto.newPassword;
+    const saltRounds = parseInt(process.env.CRYPT_SALT) || 10;
+    user.passwordHash = await bcrypt.hash(
+      updatePasswordDto.newPassword,
+      saltRounds,
+    );
     user.version += 1;
 
     const updatedUser = await this.userRepository.save(user);
@@ -70,8 +94,21 @@ export class UserService {
     }
   }
 
+  async validateUser(
+    login: string,
+    password: string,
+  ): Promise<UserEntity | null> {
+    const user = await this.findByLogin(login);
+    if (!user) {
+      return null;
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    return isPasswordValid ? user : null;
+  }
+
   private mapToResponse(user: UserEntity): UserResponse {
-    const { password: _, ...rest } = user;
+    const { passwordHash, refreshTokens, ...rest } = user;
     return {
       ...rest,
       createdAt: new Date(user.createdAt).getTime(),

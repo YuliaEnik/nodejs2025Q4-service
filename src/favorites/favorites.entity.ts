@@ -1,16 +1,34 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
+import { ArtistEntity } from '../artist/artist.entity';
+import { AlbumEntity } from '../album/album.entity';
+import { TrackEntity } from '../track/track.entity';
 
 @Entity('favorites')
 export class FavoritesEntity {
-  @PrimaryColumn({ type: 'varchar', default: 'default' })
-  id: string = 'default';
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @Column({ type: 'simple-array', default: '' })
-  artists: string[];
+  @ManyToMany(() => ArtistEntity)
+  @JoinTable({
+    name: 'favorites_artists',
+    joinColumn: { name: 'favoritesId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'artistsId', referencedColumnName: 'id' },
+  })
+  artists: ArtistEntity[];
 
-  @Column({ type: 'simple-array', default: '' })
-  albums: string[];
+  @ManyToMany(() => AlbumEntity)
+  @JoinTable({
+    name: 'favorites_albums',
+    joinColumn: { name: 'favoritesId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'albumsId', referencedColumnName: 'id' },
+  })
+  albums: AlbumEntity[];
 
-  @Column({ type: 'simple-array', default: '' })
-  tracks: string[];
+  @ManyToMany(() => TrackEntity)
+  @JoinTable({
+    name: 'favorites_tracks',
+    joinColumn: { name: 'favoritesId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'tracksId', referencedColumnName: 'id' },
+  })
+  tracks: TrackEntity[];
 }
