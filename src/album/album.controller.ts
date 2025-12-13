@@ -33,12 +33,6 @@ export class AlbumController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createAlbumDto: CreateAlbumDto) {
-    if (!createAlbumDto.name || !createAlbumDto.year) {
-      throw new BadRequestException('Name and year are required');
-    }
-    if (typeof createAlbumDto.year !== 'number') {
-      throw new BadRequestException('Year must be a number');
-    }
     return this.albumService.create(createAlbumDto);
   }
 
@@ -47,9 +41,6 @@ export class AlbumController {
     @Param('id') id: string,
     @Body() updateAlbumDto: UpdateAlbumDto,
   ) {
-    if (!updateAlbumDto.name || !updateAlbumDto.year) {
-      throw new BadRequestException('Name and year are required');
-    }
     if (typeof updateAlbumDto.year !== 'number') {
       throw new BadRequestException('Year must be a number');
     }

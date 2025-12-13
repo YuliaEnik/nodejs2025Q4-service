@@ -31,8 +31,14 @@ export class AlbumService {
   }
 
   async create(createAlbumDto: CreateAlbumDto): Promise<AlbumEntity> {
-    const newAlbum = this.albumRepository.create(createAlbumDto);
-    return this.albumRepository.save(newAlbum);
+    const album = new AlbumEntity();
+    album.name = createAlbumDto.name;
+    album.year = createAlbumDto.year;
+    album.artistId =
+      createAlbumDto.artistId !== undefined ? createAlbumDto.artistId : null;
+
+    const savedAlbum = await this.albumRepository.save(album);
+    return savedAlbum;
   }
 
   async update(
@@ -43,7 +49,21 @@ export class AlbumService {
 
     const album = await this.findById(id);
 
-    const updatedAlbum = this.albumRepository.merge(album, updateAlbumDto);
+    const updateData: Partial<AlbumEntity> = {};
+
+    if (updateAlbumDto.name !== undefined) {
+      updateData.name = updateAlbumDto.name;
+    }
+
+    if (updateAlbumDto.year !== undefined) {
+      updateData.year = updateAlbumDto.year;
+    }
+
+    if (updateAlbumDto.artistId !== undefined) {
+      updateData.artistId = updateAlbumDto.artistId;
+    }
+
+    const updatedAlbum = this.albumRepository.merge(album, updateData);
     return this.albumRepository.save(updatedAlbum);
   }
 

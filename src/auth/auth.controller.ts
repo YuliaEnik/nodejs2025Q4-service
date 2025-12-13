@@ -28,7 +28,7 @@ export class AuthController {
   @Public()
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
-  async signup(@Body() signupDto: SignupDto): Promise<{ message: string }> {
+  async signup(@Body() signupDto: SignupDto): Promise<{ id: string }> {
     return this.authService.signup(signupDto);
   }
 

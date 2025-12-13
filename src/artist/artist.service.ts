@@ -55,8 +55,8 @@ export class ArtistService {
     if (!artist) {
       throw new NotFoundException('Artist not found');
     }
-    this.trackService.setArtistIdToNull(id);
-    this.albumService.setArtistIdToNull(id);
+    await this.trackService.setArtistIdToNull(id);
+    await this.albumService.setArtistIdToNull(id);
 
     await this.artistRepository.remove(artist);
   }

@@ -28,15 +28,20 @@ export class FavoritesService {
   ) {}
 
   async findAll(): Promise<FavoritesResponse> {
-    const favorites = await this.getOrCreateFavorites();
-
-    return {
-      artists: favorites.artists || [],
-      albums: favorites.albums || [],
-      tracks: favorites.tracks || [],
-    };
+    console.log('Finding favorites...');
+    try {
+      const favorites = await this.getOrCreateFavorites();
+      console.log('Favorites found:', favorites);
+      return {
+        artists: favorites.artists || [],
+        albums: favorites.albums || [],
+        tracks: favorites.tracks || [],
+      };
+    } catch (error) {
+      console.error('Error in findAll:', error);
+      throw error;
+    }
   }
-
   async addArtist(id: string): Promise<void> {
     this.validateUuid(id);
 
@@ -47,7 +52,6 @@ export class FavoritesService {
 
     const favorites = await this.getOrCreateFavorites();
 
-    // Проверяем, нет ли уже этого артиста в избранном
     const existingArtist = favorites.artists?.find((a) => a.id === id);
     if (!existingArtist) {
       if (!favorites.artists) favorites.artists = [];
@@ -149,7 +153,7 @@ export class FavoritesService {
   private async getOrCreateFavorites(): Promise<FavoritesEntity> {
     let favorites = await this.favoritesRepository.findOne({
       where: { id: this.favoritesId },
-      relations: ['artists', 'albums', 'tracks'], // Важно: загружаем связи
+      relations: ['artists', 'albums', 'tracks'],
     });
 
     if (!favorites) {

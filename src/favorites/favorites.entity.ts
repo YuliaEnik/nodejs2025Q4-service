@@ -1,14 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, ManyToMany, JoinTable, PrimaryColumn } from 'typeorm';
 import { ArtistEntity } from '../artist/artist.entity';
 import { AlbumEntity } from '../album/album.entity';
 import { TrackEntity } from '../track/track.entity';
 
 @Entity('favorites')
 export class FavoritesEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn({ type: 'varchar', default: 'default' })
   id: string;
 
-  @ManyToMany(() => ArtistEntity)
+  @ManyToMany(() => ArtistEntity, { nullable: true, eager: true })
   @JoinTable({
     name: 'favorites_artists',
     joinColumn: { name: 'favoritesId', referencedColumnName: 'id' },
@@ -16,7 +16,7 @@ export class FavoritesEntity {
   })
   artists: ArtistEntity[];
 
-  @ManyToMany(() => AlbumEntity)
+  @ManyToMany(() => AlbumEntity, { nullable: true, eager: true })
   @JoinTable({
     name: 'favorites_albums',
     joinColumn: { name: 'favoritesId', referencedColumnName: 'id' },
@@ -24,7 +24,7 @@ export class FavoritesEntity {
   })
   albums: AlbumEntity[];
 
-  @ManyToMany(() => TrackEntity)
+  @ManyToMany(() => TrackEntity, { nullable: true, eager: true })
   @JoinTable({
     name: 'favorites_tracks',
     joinColumn: { name: 'favoritesId', referencedColumnName: 'id' },

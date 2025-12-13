@@ -11,6 +11,6 @@ export class AlbumEntity {
   @Column({ type: 'int' })
   year: number;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ name: 'artist_id', type: 'uuid', nullable: true })
   artistId: string | null;
 }

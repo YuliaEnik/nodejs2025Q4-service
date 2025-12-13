@@ -10,6 +10,7 @@ import { AlbumModule } from './album/album.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { LoggingModule } from './common/logging/logging.module';
 import { AuthModule } from './auth/auth.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -24,10 +25,11 @@ import { AuthModule } from './auth/auth.module';
       password: process.env.POSTGRES_PASSWORD || 'postgres',
       database: process.env.POSTGRES_DB || 'music_service',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: false,
-      migrationsRun: true,
+      synchronize: true,
+      migrationsRun: false,
       migrations: [__dirname + '/../migrations/*.ts'],
-      logging: process.env.NODE_ENV !== 'production',
+      //logging: process.env.NODE_ENV !== 'production',
+      logging: ['query', 'error'],
     }),
     LoggingModule,
     AuthModule,

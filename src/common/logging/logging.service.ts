@@ -28,7 +28,7 @@ export class LoggingService extends ConsoleLogger {
         this.logLevel = 4;
         break;
       default:
-        this.logLevel = 2; // default INFO
+        this.logLevel = 2;
     }
   }
 

@@ -25,10 +25,10 @@ export class AuthService {
     private refreshTokenRepository: Repository<RefreshTokenEntity>,
   ) {}
 
-  async signup(signupDto: SignupDto): Promise<{ message: string }> {
+  async signup(signupDto: SignupDto): Promise<{ id: string }> {
     try {
-      await this.userService.create(signupDto);
-      return { message: 'User created successfully' };
+      const user = await this.userService.create(signupDto);
+      return { id: user.id };
     } catch (error) {
       if (error instanceof ConflictException) {
         throw error;

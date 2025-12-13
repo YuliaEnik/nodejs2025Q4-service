@@ -8,10 +8,10 @@ export class TrackEntity {
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ name: 'artist_id', type: 'uuid', nullable: true })
   artistId: string | null;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ name: 'album_id', type: 'uuid', nullable: true })
   albumId: string | null;
 
   @Column({ type: 'int' })
