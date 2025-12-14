@@ -8,7 +8,8 @@
 ## Downloading
 
 ```
-git clone {repository URL}
+git clone https://github.com/YuliaEnik/nodejs2025Q4-service.git
+
 
 ```
 ## Installing NPM modules
@@ -25,6 +26,10 @@ npm install
 npm install --legacy-peer-deps
 
 *Note: The `--legacy-peer-deps` flag is used to bypass strict version checking and is suitable for this project. For more details on this flag, see the [npm documentation](https://docs.npmjs.com/cli/v10/commands/npm-install).*
+
+## Copy environment template:
+
+cp .env.example .env
 
 ## Running application
 
