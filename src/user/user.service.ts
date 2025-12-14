@@ -108,7 +108,7 @@ export class UserService {
   }
 
   private mapToResponse(user: UserEntity): UserResponse {
-    const { passwordHash, refreshTokens, ...rest } = user;
+    const { ...rest } = user;
     return {
       ...rest,
       createdAt: new Date(user.createdAt).getTime(),

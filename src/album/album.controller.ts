@@ -12,8 +12,31 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AlbumService } from './album.service';
-import { CreateAlbumDto, UpdateAlbumDto } from './album.types';
+import { UpdateAlbumDto } from './album.types';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import {
+  IsString,
+  IsInt,
+  IsOptional,
+  Min,
+  Max,
+  IsNotEmpty,
+} from 'class-validator';
+
+class CreateAlbumDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsInt()
+  @Min(1900)
+  @Max(new Date().getFullYear())
+  @IsNotEmpty()
+  year: number;
+
+  @IsOptional()
+  artistId?: string | null;
+}
 
 @Controller('album')
 @UseGuards(JwtAuthGuard)

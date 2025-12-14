@@ -31,6 +31,13 @@ export class AlbumService {
   }
 
   async create(createAlbumDto: CreateAlbumDto): Promise<AlbumEntity> {
+    if (!createAlbumDto.name || typeof createAlbumDto.name !== 'string') {
+      throw new BadRequestException('Name is required');
+    }
+
+    if (typeof createAlbumDto.year !== 'number') {
+      throw new BadRequestException('Year is required and must be a number');
+    }
     const album = new AlbumEntity();
     album.name = createAlbumDto.name;
     album.year = createAlbumDto.year;

@@ -27,13 +27,16 @@ async function bootstrap() {
     }
   });
 
-  process.on('unhandledRejection', (reason: unknown, promise: Promise<unknown>) => {
-    loggingService.error(
-      `Unhandled Rejection at: ${promise} - Reason: ${reason}`,
-      new Error().stack,
-      'Process',
-    );
-  });
+  process.on(
+    'unhandledRejection',
+    (reason: unknown, promise: Promise<unknown>) => {
+      loggingService.error(
+        `Unhandled Rejection at: ${promise} - Reason: ${reason}`,
+        new Error().stack,
+        'Process',
+      );
+    },
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({
