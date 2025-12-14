@@ -2,7 +2,7 @@ import { authRoutes } from '../endpoints';
 
 const createUserDto = {
   login: 'TEST_AUTH_LOGIN',
-  password: 'Tu6!@#%&',
+  password: 'Test123',
 };
 
 const getTokenAndUserId = async (request) => {

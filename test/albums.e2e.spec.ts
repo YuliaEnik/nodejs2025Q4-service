@@ -136,7 +136,6 @@ describe('Album (e2e)', () => {
           year: '2022',
         }),
       ]);
-
       expect(
         responses.every(
           ({ statusCode }) => statusCode === StatusCodes.BAD_REQUEST,
